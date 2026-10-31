@@ -401,7 +401,7 @@ export const WSC: WscEntry[] = [
   {
     n: 52, topic: "Second commandment", q: "What are the reasons annexed to the second commandment?",
     a: "The reasons annexed to the second commandment are, God’s sovereignty over us, his propriety in us, and the zeal he hath to his own worship.",
-    refs: ["Exodus 20:5-6", "Psalm 95:2-3", "Psalm 95:6", "Psalm 45:11", "Exodus 34:13-14"],
+    refs: ["Exodus 20:5-6", "Psalm 95:2-3", "Psalm 95:6", "Exodus 34:13-14"],
     correct: ["God’s sovereignty over us", "His ownership of us", "The zeal he has for his own worship"],
     wrong: ["That images are merely unattractive", "That images cost too much to make"],
   },

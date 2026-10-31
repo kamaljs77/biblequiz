@@ -20,7 +20,9 @@
     "prod:seed": "tsx --env-file=.env.production.local prisma/seed.ts --admin-only",
     "prod:bible:import": "tsx --env-file=.env.production.local scripts/import-bible.ts",
     "prod:wsc:import": "tsx --env-file=.env.production.local scripts/import-wsc.ts",
-    "prod:reset-password": "tsx --env-file=.env.production.local scripts/reset-admin-password.ts"
+    "prod:reset-password": "tsx --env-file=.env.production.local scripts/reset-admin-password.ts",
+    "quizzes:publish": "tsx --env-file=.env scripts/publish-quizzes.ts",
+    "prod:quizzes:publish": "tsx --env-file=.env.production.local scripts/publish-quizzes.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

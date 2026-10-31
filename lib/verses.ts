@@ -11,14 +11,16 @@ export type ResolvedRef = ParsedRef & {
 };
 
 export async function resolveReference(ref: ParsedRef): Promise<ResolvedRef> {
-  const rows = await prisma.bibleVerse.findMany({
-    where: {
-      book: ref.book,
-      chapter: ref.chapter,
-      verse: { gte: ref.verseStart, lte: ref.verseEnd },
-    },
-    orderBy: { verse: "asc" },
-  });
+  const rows = (
+    await prisma.bibleVerse.findMany({
+      where: {
+        book: ref.book,
+        chapter: ref.chapter,
+        verse: { gte: ref.verseStart, lte: ref.verseEnd },
+      },
+      orderBy: { verse: "asc" },
+    })
+  ).filter((r) => r.text.trim()); // The WEB leaves some verses blank (e.g. Acts 8:37).
   return {
     ...ref,
     label: formatReference(ref),

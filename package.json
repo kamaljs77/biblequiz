@@ -11,7 +11,8 @@
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "typecheck": "tsc --noEmit",
     "bible:import": "tsx --env-file=.env scripts/import-bible.ts",
-    "admin:reset-password": "tsx --env-file=.env scripts/reset-admin-password.ts"
+    "admin:reset-password": "tsx --env-file=.env scripts/reset-admin-password.ts",
+    "wsc:import": "tsx --env-file=.env scripts/import-wsc.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

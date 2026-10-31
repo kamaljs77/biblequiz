@@ -27,9 +27,18 @@ npm run dev
 | `npm run build` / `npm start` | Production build and server |
 | `npm run db:migrate` | Apply database migrations |
 | `npm run db:seed` | Create the admin and the sample quiz (safe to re-run) |
-| `npm run bible:import -- <file.csv>` | Load the full WEB text (CSV with `book,chapter,verse,text` columns) |
+| `npm run bible:import -- <file>` | Load the full WEB text (see below) |
+| `npm run wsc:import` | Import the 107 Westminster Shorter Catechism questions and 11 draft quizzes (safe to re-run) |
 | `npm run admin:reset-password -- <new>` | Reset a forgotten admin password |
 | `npm run typecheck` / `npm run lint` | Checks |
+
+## Loading content
+
+1. Download the World English Bible (public domain) from eBible.org:
+   https://ebible.org/Scriptures/eng-web_vpl.zip, and unzip it.
+2. `npm run bible:import -- path/to/eng-web_vpl.txt` (loads the 66 canonical books, 31,103 verses).
+3. `npm run wsc:import` checks every proof text against the WEB, then creates the catechism
+   questions (`prisma/data/wsc.ts`) as drafts plus 11 draft quizzes. Review them in the admin, then publish.
 
 ## How it fits together
 

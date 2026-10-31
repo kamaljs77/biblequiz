@@ -55,6 +55,11 @@ export default async function QuizList({ searchParams }: { searchParams: Promise
               </div>
               <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[q.status] ?? ""}`}>{q.status}</span>
               {q.status === "published" && <CopyLink path={`/quiz/${q.slug}`} />}
+              {q.status === "draft" && (
+                <Link href={`/admin/quizzes/${q.id}/preview`} className="btn-secondary">
+                  Preview
+                </Link>
+              )}
             </li>
           );
         })}

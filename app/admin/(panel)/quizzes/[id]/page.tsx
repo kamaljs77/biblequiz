@@ -61,8 +61,14 @@ export default async function QuizDetail({ params, searchParams }: Props) {
         {header}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="font-serif text-2xl font-semibold">Edit draft quiz</h1>
-          <QuizActions id={quiz.id} status={quiz.status} />
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/quizzes/${quiz.id}/preview`} className="btn-primary">
+              Preview
+            </Link>
+            <QuizActions id={quiz.id} status={quiz.status} />
+          </div>
         </div>
+        <p className="text-xs text-muted">Preview shows the last saved draft. Save your changes first.</p>
         <QuizForm
           id={quiz.id}
           bank={bank}
@@ -106,6 +112,9 @@ export default async function QuizDetail({ params, searchParams }: Props) {
         <CopyLink path={`/q/${quiz.shortId}`} label="Copy short link" />
         <Link href={`/quiz/${quiz.slug}`} target="_blank" className="btn-secondary">
           Open
+        </Link>
+        <Link href={`/admin/quizzes/${quiz.id}/preview`} className="btn-secondary">
+          Preview
         </Link>
         <Link href={`/admin/quizzes/${quiz.id}/results`} className="btn-secondary">
           Results

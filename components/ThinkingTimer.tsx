@@ -10,12 +10,15 @@ export function ThinkingTimer({
   seconds,
   total,
   allowEarly,
+  adminSkip = false,
   onTick,
   onDone,
 }: {
   seconds: number;
   total: number;
   allowEarly: boolean;
+  /** Admin preview: offer a skip even when the quiz does not allow "I'm ready". */
+  adminSkip?: boolean;
   onTick: (remainingWholeSeconds: number) => void;
   onDone: () => void;
 }) {
@@ -99,6 +102,11 @@ export function ThinkingTimer({
         {allowEarly && (
           <button type="button" className="btn-secondary" onClick={finishEarly}>
             I’m ready
+          </button>
+        )}
+        {!allowEarly && adminSkip && (
+          <button type="button" className="text-sm text-muted underline" onClick={finishEarly}>
+            Skip timer (preview only)
           </button>
         )}
       </div>

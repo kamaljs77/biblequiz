@@ -32,7 +32,12 @@ type Results = { name: string; score: number; maxScore: number; review: ReviewIt
 
 type Phase = "loading" | "think" | "choose" | "feedback" | "results" | "error";
 
-export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
+type CallResult = { ok: boolean; status: number; data: Record<string, any> }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/** Admin preview: answers are handled in the browser instead of by /api/attempts. */
+export type PreviewApi = { call: (body: object) => Promise<CallResult>; onRestart: () => void };
+
+export function QuizPlayer({ slug, title, preview }: { slug: string; title: string; preview?: PreviewApi }) {
   const router = useRouter();
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("loading");
@@ -51,7 +56,8 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
   const topRef = useRef<HTMLDivElement>(null);
 
   const call = useCallback(
-    async (id: string, body: object) => {
+    async (id: string, body: object): Promise<CallResult> => {
+      if (preview) return preview.call(body);
       const res = await fetch(`/api/attempts/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,7 +66,7 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
       const data = await res.json().catch(() => ({}));
       return { ok: res.ok, status: res.status, data };
     },
-    [],
+    [preview],
   );
 
   const reveal = useCallback(
@@ -90,7 +96,7 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
       setFeedback(null);
       const r = await call(id, { action: "question", index: i });
       if (!r.ok) {
-        if (r.status === 409 || r.status === 404) {
+        if (!preview && (r.status === 409 || r.status === 404)) {
           clearProgress(slug);
           router.replace(`/quiz/${slug}`);
           return;
@@ -124,10 +130,15 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
         }
       }
     },
-    [call, reveal, router, slug],
+    [call, reveal, router, slug, preview],
   );
 
   useEffect(() => {
+    if (preview) {
+      setAttemptId("preview");
+      load("preview", 0, null);
+      return;
+    }
     const p = readProgress(slug);
     if (!p) {
       router.replace(`/quiz/${slug}`);
@@ -135,7 +146,7 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
     }
     setAttemptId(p.attemptId);
     load(p.attemptId, p.index, p.remaining);
-  }, [slug, load, router]);
+  }, [slug, load, router, preview]);
 
   function toggle(key: string) {
     if (!question) return;
@@ -173,7 +184,7 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
       return;
     }
     clearProgress(slug);
-    setResults(r.data);
+    setResults(r.data as Results);
     setPhase("results");
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -193,7 +204,12 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
       </p>
 
       {phase === "results" && results ? (
-        <ResultsView results={results} title={title} slug={slug} onRetake={() => router.push(`/quiz/${slug}`)} />
+        <ResultsView
+          results={results}
+          title={title}
+          slug={preview ? null : slug}
+          onRetake={preview ? preview.onRestart : () => router.push(`/quiz/${slug}`)}
+        />
       ) : (
         <>
           <div className="flex items-center justify-between text-sm text-muted">
@@ -224,6 +240,7 @@ export function QuizPlayer({ slug, title }: { slug: string; title: string }) {
                   seconds={startSeconds}
                   total={question.thinkTimeSeconds}
                   allowEarly={allowEarly}
+                  adminSkip={!!preview}
                   onTick={onTick}
                   onDone={() => attemptId && reveal(attemptId, index)}
                 />
@@ -344,7 +361,8 @@ function ResultsView({
 }: {
   results: Results;
   title: string;
-  slug: string;
+  /** Null in the admin preview, where there is nothing to share yet. */
+  slug: string | null;
   onRetake: () => void;
 }) {
   const pct = results.maxScore ? Math.round((results.score / results.maxScore) * 100) : 0;
@@ -366,10 +384,12 @@ function ResultsView({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <h2 className="font-semibold">Share this quiz</h2>
-        <ShareButtons path={`/quiz/${slug}`} title={title} />
-      </div>
+      {slug && (
+        <div className="space-y-2">
+          <h2 className="font-semibold">Share this quiz</h2>
+          <ShareButtons path={`/quiz/${slug}`} title={title} />
+        </div>
+      )}
 
       <div className="space-y-4">
         <h2 className="font-semibold">Review</h2>

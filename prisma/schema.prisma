@@ -1,13 +1,14 @@
-// SQLite for local development. Switch provider to "postgresql" for production
-// (requirements §9); the schema avoids SQLite- or Postgres-only column types.
+// PostgreSQL (Supabase in production). DATABASE_URL is the pooled connection the
+// app uses; DIRECT_URL is a non-pooled connection used by `prisma migrate`.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Admin {

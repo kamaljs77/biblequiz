@@ -9,7 +9,13 @@ const serif = Literata({ variable: "--font-serif", subsets: ["latin"] });
 export const metadata: Metadata = {
   title: { default: "Bible Quiz", template: "%s · Bible Quiz" },
   description: "Read the Scriptures, think, and answer.",
-  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+  // Used for absolute links in WhatsApp/social previews. On Vercel, falls back to the production domain.
+  metadataBase: new URL(
+    process.env.SITE_URL ??
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : "http://localhost:3000"),
+  ),
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

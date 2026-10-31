@@ -1,5 +1,5 @@
 // Creates the admin account and a small sample quiz for local development.
-// Run with `npm run db:seed`. Safe to run more than once.
+// Run with `npm run db:seed` (or `--admin-only` for production). Safe to run more than once.
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/db";
 import { newShortId, publishQuiz } from "../lib/quizzes";
@@ -82,9 +82,13 @@ async function main() {
   if (existing) {
     console.log(`Admin already exists (${existing.email}); leaving it unchanged.`);
   } else {
-    await prisma.admin.create({ data: { email: ADMIN_EMAIL, name: ADMIN_NAME ?? "Admin", passwordHash } });
-    console.log(`Created admin ${ADMIN_EMAIL}`);
+    const email = ADMIN_EMAIL.trim().toLowerCase(); // login compares lower-case emails
+    await prisma.admin.create({ data: { email, name: ADMIN_NAME ?? "Admin", passwordHash } });
+    console.log(`Created admin ${email}`);
   }
+
+  // Production: create only the admin account, without the sample quiz.
+  if (process.argv.includes("--admin-only")) return;
 
   for (const [book, chapter, verse, text] of SAMPLE_VERSES) {
     await prisma.bibleVerse.upsert({

@@ -12,7 +12,15 @@
     "typecheck": "tsc --noEmit",
     "bible:import": "tsx --env-file=.env scripts/import-bible.ts",
     "admin:reset-password": "tsx --env-file=.env scripts/reset-admin-password.ts",
-    "wsc:import": "tsx --env-file=.env scripts/import-wsc.ts"
+    "wsc:import": "tsx --env-file=.env scripts/import-wsc.ts",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma migrate deploy && next build",
+    "db:deploy": "prisma migrate deploy",
+    "prod:migrate": "node --env-file=.env.production.local node_modules/prisma/build/index.js migrate deploy",
+    "prod:seed": "tsx --env-file=.env.production.local prisma/seed.ts --admin-only",
+    "prod:bible:import": "tsx --env-file=.env.production.local scripts/import-bible.ts",
+    "prod:wsc:import": "tsx --env-file=.env.production.local scripts/import-wsc.ts",
+    "prod:reset-password": "tsx --env-file=.env.production.local scripts/reset-admin-password.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

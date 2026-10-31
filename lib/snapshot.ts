@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { resolveReference, type VerseLine } from "@/lib/verses";
+import { resolveReferences, type VerseLine } from "@/lib/verses";
 
 /** The frozen content of a published quiz (requirements FR-5.4). */
 export type QuizSnapshotContent = {
@@ -51,13 +51,13 @@ export async function buildSnapshot(quizId: number): Promise<QuizSnapshotContent
     },
   });
 
+  const resolved = await resolveReferences(quiz.questions.flatMap(({ question: q }) => q.verseRefs));
+  let next = 0;
+
   const questions: SnapshotQuestion[] = [];
   for (const { question: q } of quiz.questions) {
-    const verses = [];
-    for (const v of q.verseRefs) {
-      const r = await resolveReference(v);
-      verses.push({ label: r.label, lines: r.lines });
-    }
+    const verses = resolved.slice(next, next + q.verseRefs.length).map((r) => ({ label: r.label, lines: r.lines }));
+    next += q.verseRefs.length;
     const correctCount = q.options.filter((o) => o.isCorrect).length;
     questions.push({
       key: `q${q.id}`,

@@ -16,7 +16,12 @@ export default async function QuestionList({ searchParams }: { searchParams: Pro
   await requireAdmin();
   const sp = await searchParams;
   const where: Prisma.QuestionWhereInput = {};
-  if (sp.q) where.OR = [{ prompt: { contains: sp.q } }, { sourceRef: { contains: sp.q } }];
+  if (sp.q) {
+    where.OR = [
+      { prompt: { contains: sp.q, mode: "insensitive" } },
+      { sourceRef: { contains: sp.q, mode: "insensitive" } },
+    ];
+  }
   if (sp.tag) where.tags = { some: { tag: { name: sp.tag } } };
   where.status = sp.status ? sp.status : { not: "archived" };
 

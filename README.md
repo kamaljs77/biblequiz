@@ -6,15 +6,18 @@ answers. See [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) for the full requireme
 
 ## Getting started
 
-Requires Node.js 20+.
+Requires Node.js 20+ and a PostgreSQL database: a local install, or a separate free Supabase project
+for development.
 
 ```bash
 npm install
-cp .env.example .env      # then fill in AUTH_SECRET and ADMIN_PASSWORD
-npm run db:migrate        # creates prisma/dev.db (SQLite)
+cp .env.example .env      # then fill in DATABASE_URL, DIRECT_URL, AUTH_SECRET and ADMIN_PASSWORD
+npm run db:migrate        # creates the tables
 npm run db:seed           # creates the admin account and a sample quiz
 npm run dev
 ```
+
+To put the site online, follow [docs/DEPLOY.md](docs/DEPLOY.md) (Vercel + Supabase).
 
 - Public site: http://localhost:3000 (sample quiz at `/quiz/sample-quiz`)
 - Admin: http://localhost:3000/admin (sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`)
@@ -31,6 +34,7 @@ npm run dev
 | `npm run wsc:import` | Import the 107 Westminster Shorter Catechism questions and 11 draft quizzes (safe to re-run) |
 | `npm run admin:reset-password -- <new>` | Reset a forgotten admin password |
 | `npm run typecheck` / `npm run lint` | Checks |
+| `npm run prod:*` | The same data commands against production, using `.env.production.local` (see [docs/DEPLOY.md](docs/DEPLOY.md)) |
 
 ## Loading content
 
@@ -43,7 +47,8 @@ npm run dev
 ## How it fits together
 
 - **Next.js 15** (App Router) serves both the public pages and the `/admin` pages.
-- **Prisma** with SQLite locally; switch the datasource to PostgreSQL for production.
+- **Prisma** with PostgreSQL (Supabase in production). `DATABASE_URL` is the pooled connection the app
+  uses; `DIRECT_URL` is for migrations, which Vercel applies during `npm run vercel-build`.
 - **Publishing freezes a quiz**: `lib/quizzes.ts` stores a JSON snapshot (`QuizSnapshot`), and public
   pages read only that snapshot, so later edits to the question bank never change a shared link.
 - **Answers are released by the server** (`app/api/attempts/[id]/route.ts`): options are sent only after

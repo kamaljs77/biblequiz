@@ -297,7 +297,7 @@ Public quiz and study pages read only from `QuizSnapshot`, never from the live q
 | Layer | Proposal | Reason |
 |---|---|---|
 | Frontend + backend | **Next.js** (React, TypeScript) | One codebase for public pages and admin pages. Server rendering supports SEO and link previews. |
-| Database | **PostgreSQL** (e.g. Supabase or Neon) | Relational data fits questions, options, and quizzes well. Free tiers are available. |
+| Database | **PostgreSQL on Supabase** (decided) | Relational data fits questions, options, and quizzes well. Free tier is enough. |
 | Auth | Single admin login with a hashed password (Auth.js credentials) | Simple. No third-party sign-in needed for one user. |
 | Bible text | Full WEB text loaded into the `BibleVerse` table | No dependency on an outside API, and no licensing risk. |
 | Hosting | **Vercel** (or similar) | Free to start, custom domain, global CDN. |

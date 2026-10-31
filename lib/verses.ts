@@ -29,6 +29,33 @@ export async function resolveReference(ref: ParsedRef): Promise<ResolvedRef> {
   };
 }
 
+/** Resolves many references with a single query (used when publishing). */
+export async function resolveReferences(refs: ParsedRef[]): Promise<ResolvedRef[]> {
+  if (refs.length === 0) return [];
+  const rows = await prisma.bibleVerse.findMany({
+    where: {
+      OR: refs.map((r) => ({
+        book: r.book,
+        chapter: r.chapter,
+        verse: { gte: r.verseStart, lte: r.verseEnd },
+      })),
+    },
+  });
+  return refs.map((ref) => {
+    const lines = rows
+      .filter((v) => v.book === ref.book && v.chapter === ref.chapter && v.verse >= ref.verseStart && v.verse <= ref.verseEnd)
+      .filter((v) => v.text.trim())
+      .sort((a, b) => a.verse - b.verse)
+      .map((v) => ({ verse: v.verse, text: v.text }));
+    return {
+      ...ref,
+      label: formatReference(ref),
+      lines,
+      complete: lines.length === ref.verseEnd - ref.verseStart + 1,
+    };
+  });
+}
+
 /** Whether the WEB text has been imported (beyond the small development sample). */
 export async function bibleIsLoaded(): Promise<boolean> {
   return (await prisma.bibleVerse.count()) > 30000;

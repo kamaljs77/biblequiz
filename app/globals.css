@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --surface-2: #f3eee6;
+  --ink: #1f1b16;
+  --muted: #6b6257;
+  --line: #e4ddd2;
+  --accent: #7a4b1f;
+  --accent-ink: #ffffff;
+  --accent-soft: #f4e9dc;
+  --good: #1f7a4a;
+  --good-soft: #e3f3ea;
+  --bad: #b3261e;
+  --bad-soft: #fbe7e5;
+  --verse: #3a3128;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15120f;
+    --surface: #1e1a16;
+    --surface-2: #27221c;
+    --ink: #f1ebe3;
+    --muted: #a99e90;
+    --line: #3a332b;
+    --accent: #e0a96d;
+    --accent-ink: #1b140c;
+    --accent-soft: #3a2b1c;
+    --good: #6fd19c;
+    --good-soft: #17301f;
+    --bad: #f28b82;
+    --bad-soft: #3a1b18;
+    --verse: #e6ddd1;
+  }
+}
+
+body {
+  color: var(--ink);
+  background: var(--bg);
+}
+
+@layer components {
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+.btn-primary {
+  @apply btn bg-accent text-accent-ink hover:opacity-90;
+}
+.btn-secondary {
+  @apply btn border border-line bg-surface text-ink hover:bg-surface-2;
+}
+.btn-danger {
+  @apply btn border border-bad text-bad hover:bg-bad-soft;
+}
+.card {
+  @apply rounded-xl border border-line bg-surface;
+}
+.input {
+  @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft;
+}
+.label {
+  @apply mb-1 block text-sm font-medium;
+}
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}

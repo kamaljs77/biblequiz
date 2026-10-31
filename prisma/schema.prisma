@@ -1,0 +1,160 @@
+// SQLite for local development. Switch provider to "postgresql" for production
+// (requirements §9); the schema avoids SQLite- or Postgres-only column types.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+/// Full World English Bible text, one row per verse.
+model BibleVerse {
+  book    String
+  chapter Int
+  verse   Int
+  text    String
+
+  @@id([book, chapter, verse])
+}
+
+model Question {
+  id               Int            @id @default(autoincrement())
+  prompt           String
+  explanation      String         @default("")
+  difficulty       String         @default("medium") // easy | medium | hard
+  status           String         @default("draft") // draft | active | archived
+  thinkTimeSeconds Int?
+  sourceRef        String? // e.g. "WSC Q1"
+  options          Option[]
+  verseRefs        VerseRef[]
+  tags             QuestionTag[]
+  quizzes          QuizQuestion[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean
+  sortOrder  Int
+}
+
+model VerseRef {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  book       String
+  chapter    Int
+  verseStart Int
+  verseEnd   Int
+  sortOrder  Int
+}
+
+model Tag {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  questions QuestionTag[]
+}
+
+model QuestionTag {
+  questionId Int
+  tagId      Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+}
+
+model Series {
+  id          Int    @id @default(autoincrement())
+  name        String
+  slug        String @unique
+  description String @default("")
+  sortOrder   Int    @default(0)
+  quizzes     Quiz[]
+}
+
+model Quiz {
+  id                Int            @id @default(autoincrement())
+  slug              String         @unique
+  shortId           String         @unique
+  seriesId          Int?
+  series            Series?        @relation(fields: [seriesId], references: [id])
+  title             String
+  description       String         @default("")
+  coverImageUrl     String?
+  status            String         @default("draft") // draft | published | archived
+  thinkTimeSeconds  Int            @default(60)
+  allowEarlyReveal  Boolean        @default(true)
+  shuffleQuestions  Boolean        @default(false)
+  shuffleOptions    Boolean        @default(true)
+  feedbackMode      String         @default("immediate") // immediate | end
+  studyModeEnabled  Boolean        @default(true)
+  sortOrder         Int            @default(0)
+  previousVersionId Int?
+  supersededById    Int?
+  publishedAt       DateTime?
+  questions         QuizQuestion[]
+  snapshot          QuizSnapshot?
+  attempts          Attempt[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model QuizQuestion {
+  quizId     Int
+  questionId Int
+  sortOrder  Int
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id])
+
+  @@id([quizId, questionId])
+}
+
+/// Frozen copy of a quiz taken at publish time. Public pages read only this.
+model QuizSnapshot {
+  quizId      Int      @id
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  publishedAt DateTime
+  contentJson String
+}
+
+model Attempt {
+  id              String          @id @default(cuid())
+  quizId          Int
+  quiz            Quiz            @relation(fields: [quizId], references: [id])
+  participantName String
+  /// Per-attempt question order, option order and reveal times (JSON).
+  stateJson       String
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  score           Int             @default(0)
+  maxScore        Int
+  answers         AttemptAnswer[]
+}
+
+model AttemptAnswer {
+  id           Int      @id @default(autoincrement())
+  attemptId    String
+  attempt      Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionKey  String
+  selectedJson String
+  isCorrect    Boolean
+  answeredAt   DateTime @default(now())
+
+  @@unique([attemptId, questionKey])
+}
